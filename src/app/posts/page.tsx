@@ -5,8 +5,30 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
 const PostsPage = async () => {
-  const posts = await prisma.post.findMany();
+  // const posts = await prisma.post.findMany();
+  const user = await prisma.user.findUnique({
+    where: {
+      email: "steve@gmail.com",
+    },
+    include: {
+      posts: {
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
+    },
+  });
+
   const postCount = await prisma.post.count();
+
+  if (!user) {
+    return (
+      <div className='flex flex-col items-center min-h-screen p-4 w-full'>
+        <h1 className='text-4xl font-bold mb-2'>No Posts Found</h1>
+      </div>
+    );
+  }
+
   return (
     <div className='flex flex-col items-center min-h-screen p-4 w-full'>
       <Link
@@ -22,18 +44,21 @@ const PostsPage = async () => {
           Posts ({postCount})
         </h2>
         <ul className='border-t-2 border-b-2 mb-4'>
-          {posts.map((post) => (
+          {user?.posts.map((post) => (
             <li
               key={post.id}
-              className='text-lg p-2 my-2 flex justify-center items-center gap-2'
+              className='text-lg p-2 my-2 flex flex-col justify-center items-center ring-2 ring-slate-700'
             >
-              <span>Post Name: </span>
-              <Link
-                href={`/posts/${post.slug}`}
-                className='hover:text-sky-800 underline cursor-pointer'
-              >
-                {post.title}
-              </Link>
+              <div className='flex justify-center gap-4'>
+                <span>Post Name: </span>
+                <Link
+                  href={`/posts/${post.slug}`}
+                  className='hover:text-sky-800 underline cursor-pointer'
+                >
+                  {post.title}
+                </Link>
+              </div>
+              <span>Written by: {user.email}</span>
             </li>
           ))}
         </ul>

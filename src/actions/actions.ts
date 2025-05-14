@@ -13,6 +13,11 @@ export async function createPost(formData: FormData) {
     title: data.title,
     content: data.content,
     slug: data.title.toLowerCase().replace(/\s+/g, "-"),
+    author: {
+      connect: {
+        email: "john@gmail.com",
+      },
+    },
   };
 
   await prisma.post.create({
